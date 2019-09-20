@@ -17,17 +17,17 @@ const totalNumRe = `"total":([1-9]\d+),`
 func ParseBookList(contents []byte, url string) model.ParseResult {
     result := model.ParseResult{}
 
-    // 增加下一页到队列
+    // 计算小说库页数
     totalNumg := regexp.MustCompile(totalNumRe)
     totalNum, _ := strconv.Atoi(extractString(contents, totalNumg))
     pages := totalNum / PREPAGE
-    totalNum += pages
 
     // 增加下一页到队列
     urlg := regexp.MustCompile(urlRe)
     urlSubmatch := urlg.FindStringSubmatch(url)
     page, _ := strconv.Atoi(urlSubmatch[1])
-    if page > 3 {
+    //判断是否已经处理完所有小说列表
+    if page > pages {
         result.EndFlag = true
         return result
     }

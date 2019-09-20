@@ -7,6 +7,7 @@ import (
     "fmt"
 )
 
+//定义小说详情页的正则匹配器
 var nameRe = regexp.MustCompile(`<h1 class="book-name"[^>]*>(.*)</h1>`)
 var authorRe = regexp.MustCompile(`<p class="book-author hidden-md-and-up" [^>]*><a [^>]*>(.*)</a>`)
 var statusRe = regexp.MustCompile(`<span class="status hidden-sm-and-down" data-v-38b3f138>·(.*)</span>`)
@@ -16,7 +17,6 @@ var scoreCountRe = regexp.MustCompile(`"scorerCount":(.*?),`)
 var addListCountRe = regexp.MustCompile(`<span class="addListCount" [^>]*>(.*?)</span>次`)
 var tagRe = regexp.MustCompile(`<a href="/bookstore/\?classId=\d+" target="_blank">(.*?)</a>`)
 var lastUpdateRe = regexp.MustCompile(`"updateAt":"(.*?)",`)
-//var lastUpdateRe = regexp.MustCompile(`更新时间：(.*)\s*<span`)
 var scoreDetailRe = regexp.MustCompile(`"scoreDetail":(\[[^>]*?\]),`)
 
 var lastUpdateTemRe = regexp.MustCompile(`(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}).*`)
@@ -60,7 +60,6 @@ func ParseBook(contents []byte, _ string) model.ParseResult {
         book.LastUpdate = match[1] + " " + match[2]
     }
     
-    fmt.Println(book)
     result := model.ParseResult{
         Items: []interface{}{book},
     }
@@ -68,11 +67,12 @@ func ParseBook(contents []byte, _ string) model.ParseResult {
     return result
 }
 
-
+//进行正则匹配，并获取第一个匹配到的match
 func extractString(body []byte, re *regexp.Regexp) string {
-    match := re.FindSubmatch(body) // 只找到第一个match的
+    match := re.FindSubmatch(body)
     if len(match) >= 2 {
         return string(match[1])
     }
+
     return ""
 }

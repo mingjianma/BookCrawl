@@ -42,6 +42,7 @@ func (e ConcurrentEngine) Run(seeds ...model.Request) {
             e.Scheduler.Submit(r)
         }
 
+        //等待关闭的渠道数据处理完再退出
         if !isClose {
             log.Printf("out channel closed!")
             break
@@ -63,6 +64,7 @@ func createWorker(in chan model.Request, out chan model.ParseResult) {
                 continue
             }
 
+            //判断任务是否爬完，爬完关闭渠道
             if result.EndFlag == true {
                 close(in)
                 close(out)

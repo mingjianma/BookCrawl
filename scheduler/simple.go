@@ -8,10 +8,7 @@ type SimpleScheduler struct {
     workerChan chan model.Request
 }
 
-// 为什么使用指针接收者，需要改变 SimpleScheduler 内部的 workerChan
-// https://stackoverflow.com/questions/27775376/value-receiver-vs-pointer-receiver-in-golang
-// https://studygolang.com/articles/1113
-// https://blog.csdn.net/suiban7403/article/details/78899671
+// 使用指针接收者，改变 SimpleScheduler 内部的 workerChan
 func (s *SimpleScheduler) ConfigureMasterWorkerChan(in chan model.Request) {
     s.workerChan = in
 }
