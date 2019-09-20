@@ -1,7 +1,7 @@
 package scheduler
 
 import (
-    "mike/crawler/model"
+    "BookCrawl/model"
 )
 
 // 调度器接口

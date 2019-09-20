@@ -1,7 +1,7 @@
 package parser
 
 import (
-    "mike/crawler/model"
+    "BookCrawl/model"
     "regexp"
  //    "fmt"
     "strconv"

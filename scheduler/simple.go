@@ -1,7 +1,7 @@
 package scheduler
 
 import (
-    "mike/crawler/model"
+    "BookCrawl/model"
 )
 
 type SimpleScheduler struct {

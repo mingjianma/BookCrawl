@@ -1,10 +1,10 @@
 package main
 
 import (
-    "mike/crawler/engine"
-    "mike/crawler/model"
-    "mike/crawler/scheduler"
-    "mike/crawler/youshu/parser"
+    "BookCrawl/engine"
+    "BookCrawl/model"
+    "BookCrawl/scheduler"
+    "BookCrawl/youshu/parser"
 )
 
 func main() {

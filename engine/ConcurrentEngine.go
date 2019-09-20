@@ -1,9 +1,9 @@
 package engine
 
 import (
-    "mike/crawler/fetcher"
-    "mike/crawler/model"
-    "mike/crawler/scheduler"
+    "BookCrawl/fetcher"
+    "BookCrawl/model"
+    "BookCrawl/scheduler"
     "log"
 )
 
