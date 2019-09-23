@@ -21,9 +21,9 @@
 │      simple.go               //协程处理
 │
 └─youshu                       //处理优书网数据目录
-	│
-	│	 main.go               //优书网处理程序入口
-	│
+    │
+    │  main.go                 //优书网处理程序入口
+    │
     └─parser                   //优书网数据处理目录
     	book.go                //处理小说详情页规则
     	booklist.go            //处理小说列表规则
