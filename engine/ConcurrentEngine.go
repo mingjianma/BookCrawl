@@ -5,6 +5,8 @@ import (
     "BookCrawl/model"
     "BookCrawl/scheduler"
     "log"
+    "time"
+    "sync"
 )
 
 // 并发引擎
@@ -15,11 +17,17 @@ type ConcurrentEngine struct {
     WorkerCount int
 }
 
+var wg sync.WaitGroup
+
 func (e ConcurrentEngine) Run(seeds ...model.Request) {
+    wg.Add(e.WorkerCount)
+    defer log.Printf("task end")
+
     in := make(chan model.Request)
     out := make(chan model.ParseResult)
     // 初始化调度器的 chann
     e.Scheduler.ConfigureMasterWorkerChan(in)
+
     // 创建 WorkerCount 个 worker
     for i := 0; i < e.WorkerCount; i++ {
         createWorker(in, out);
@@ -44,19 +52,44 @@ func (e ConcurrentEngine) Run(seeds ...model.Request) {
 
         //等待关闭的渠道数据处理完再退出
         if !isClose {
-            log.Printf("out channel closed!")
+            //log.Printf("out channel closed!")
             break
         }
-    }
+
+
+    }    
+    wg.Wait()
 }
 
 func createWorker(in chan model.Request, out chan model.ParseResult) {
     go func() {
+        defer func (){
+            //恢复在关闭in渠道后返回的worker像out <- result
+            if info := recover(); info != nil {
+                //log.Printf("panic recover")
+            }
+            wg.Done()
+        }()
+
         for {
             r, isClose := <-in // 阻塞等待获取
             if !isClose {
-                log.Printf("in channel closed!")
-                break
+                //判断out渠道的数据是否都获取完，获取完关闭out渠道，并退出循环
+                if len(out) == 0 {
+                    _, isOutClose := <-out
+                    if !isOutClose {
+                        //log.Printf("out channel closed!")
+                    } else {
+                        close(out)
+                        log.Printf("close out channel!")
+                    }
+                    break
+                } else {
+                    //log.Printf("in channel closed! wait out channel")
+                    time.Sleep(time.Duration(2)*time.Second)
+                    continue
+                }
+                
             }
 
             result, err := worker(r)
@@ -64,10 +97,10 @@ func createWorker(in chan model.Request, out chan model.ParseResult) {
                 continue
             }
 
-            //判断任务是否爬完，爬完关闭渠道
+            //判断任务是否爬完，爬完关闭in渠道
             if result.EndFlag == true {
                 close(in)
-                close(out)
+                log.Printf("close in channel!")
             } else {
                 out <- result // 阻塞发送
             }            

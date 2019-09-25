@@ -8,7 +8,7 @@ type Book struct {
 	Author string
 
 	//类型
-	Type string
+	Tag string
 
 	//字数（万字）
 	Wordage	int

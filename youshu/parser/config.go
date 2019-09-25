@@ -7,3 +7,5 @@ const PAGELISTURL string = "http://www.yousuu.com/bookstore/?channel&classId&tag
 const PREPAGE int = 20
 
 const SEED_URL string = "http://www.yousuu.com/bookstore/?channel&classId&tag&countWord&status&update&sort&page=1"
+
+const MQ_DBNAME string = "book_crawl"

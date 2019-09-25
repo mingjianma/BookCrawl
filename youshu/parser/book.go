@@ -4,13 +4,15 @@ import (
     "BookCrawl/model"
     "regexp"
     "strconv"
+    "time"
     "fmt"
+    "log"
 )
 
 //定义小说详情页的正则匹配器
 var nameRe = regexp.MustCompile(`<h1 class="book-name"[^>]*>(.*)</h1>`)
 var authorRe = regexp.MustCompile(`<p class="book-author hidden-md-and-up" [^>]*><a [^>]*>(.*)</a>`)
-var statusRe = regexp.MustCompile(`<span class="status hidden-sm-and-down" data-v-38b3f138>·(.*)</span>`)
+var statusRe = regexp.MustCompile(`<span class="status hidden-sm-and-down" [^>]*>·(.*)</span>`)
 var wordageRe = regexp.MustCompile(`"countWord":([1-9]\d+),`)
 var scoreRe = regexp.MustCompile(`"score":(.*?),`)
 var scoreCountRe = regexp.MustCompile(`"scorerCount":(.*?),`)
@@ -35,7 +37,13 @@ func ParseBook(contents []byte, _ string) model.ParseResult {
     book.Wordage , _ = strconv.Atoi(extractString(contents, wordageRe))
 
     // 状态
-    book.Status = extractString(contents, statusRe)
+    status := extractString(contents, statusRe)
+    if status == "连载" {
+        book.Status = "1"
+    } else {
+        book.Status = "0"
+    }
+    
 
     // 评分
     book.Score, _ = strconv.ParseFloat(extractString(contents, scoreRe), 64)
@@ -51,7 +59,7 @@ func ParseBook(contents []byte, _ string) model.ParseResult {
     book.AddListCount, _ = strconv.Atoi(extractString(contents, addListCountRe))
 
     // 小说标签
-    book.Type = extractString(contents, tagRe)
+    book.Tag = extractString(contents, tagRe)
 
     // 上次更新时间
     book.LastUpdate = extractString(contents, lastUpdateRe)
@@ -59,12 +67,83 @@ func ParseBook(contents []byte, _ string) model.ParseResult {
     if len(match) >= 3 {
         book.LastUpdate = match[1] + " " + match[2]
     }
+
+    if book.Book_name != "" && book.Author != "" {
+        save(book) 
+    }
     
     result := model.ParseResult{
         Items: []interface{}{book},
     }
     
     return result
+}
+
+func save(book model.Book){
+    t := time.Now()
+    date := t.Format("200601")
+    date_key := t.Format("2006-01-02")
+
+    bookTable := model.MysqlDb{Dbname:MQ_DBNAME, Tblname:"book_info"}
+    err := bookTable.NewMysqlDb()
+    if err != nil {
+        return 
+    }
+    log.Println(book)
+    bookWhere := map[string]string{"book_name":book.Book_name, "author":book.Author}
+    book_info, _ := bookTable.SetWhere(bookWhere).Find()
+
+    book_data :=  map[string]string{
+        "book_name":book.Book_name,
+        "author":book.Author,
+        "tag":book.Tag,
+        "status":book.Status,
+        "score":strconv.FormatFloat(book.Score, 'e', -1, 64),
+        "score_count":strconv.Itoa(book.Score_count),
+        "score_detail":book.Score_detail,
+        "add_list_count":strconv.Itoa(book.AddListCount),
+        "last_update_time":book.LastUpdate,
+    }
+    var book_id string
+    if book_info == nil {
+        insert_id, err := bookTable.Insert(book_data)
+        book_id = strconv.Itoa(insert_id)
+        if err != nil {
+            log.Printf("【%s】 book_info insert err：%s", book.Book_name, err)
+        }
+    } else {
+        _, err := bookTable.Update(book_data)
+        book_id = book_info["book_id"]
+        if err != nil {
+            log.Printf("【%s】 book_info update err：%s", book.Book_name, err)
+        }
+    }
+
+    scoreTable := model.MysqlDb{Dbname:MQ_DBNAME, Tblname:("book_score_daily_" + date)}
+    err = scoreTable.NewMysqlDb()
+    if err != nil {
+        return 
+    }
+    scoreWhere := map[string]string{"book_id":book_id, "date_key":date_key}
+    scoreInfo, _ := scoreTable.SetWhere(scoreWhere).Find()
+    scorce_data := map[string]string{
+        "book_id":book_id,
+        "score":strconv.FormatFloat(book.Score, 'e', -1, 64),
+        "score_count":strconv.Itoa(book.Score_count),
+        "score_detail":book.Score_detail,
+        "date_key":date_key,
+    }
+    if scoreInfo == nil {
+        _, err := scoreTable.Insert(scorce_data)
+        if err != nil {
+            log.Printf("【%s】 score_info insert err：%s", book.Book_name, err)
+        }
+    } else {
+        _, err := scoreTable.Update(scorce_data)
+        if err != nil {
+            log.Printf("【%s】 score_info update err：%s", book.Book_name, err)
+        }
+    }
 }
 
 //进行正则匹配，并获取第一个匹配到的match
