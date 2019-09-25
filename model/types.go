@@ -10,7 +10,7 @@ type Request struct {
 
 // 解析结果
 type ParseResult struct {
-	EndFlag bool
+    EndFlag bool
     // 解析出来的多个 Request 任务
     Requests []Request
     // 解析出来的实体（例如，城市名），是任意类别（interface{}，类比 java Object）

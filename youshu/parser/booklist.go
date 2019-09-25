@@ -3,7 +3,6 @@ package parser
 import (
     "BookCrawl/model"
     "regexp"
- //    "fmt"
     "strconv"
 )
 
@@ -21,14 +20,13 @@ func ParseBookList(contents []byte, url string) model.ParseResult {
     totalNumg := regexp.MustCompile(totalNumRe)
     totalNum, _ := strconv.Atoi(extractString(contents, totalNumg))
     pages := totalNum / PREPAGE
-    pages += 1
 
     // 增加下一页到队列
     urlg := regexp.MustCompile(urlRe)
     urlSubmatch := urlg.FindStringSubmatch(url)
     page, _ := strconv.Atoi(urlSubmatch[1])
     //判断是否已经处理完所有小说列表
-    if page > 3 {
+    if page > pages {
         result.EndFlag = true
         return result
     }

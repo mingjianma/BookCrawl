@@ -3,28 +3,28 @@ package model
 import "database/sql"
 import _ "github.com/go-sql-driver/mysql"
 import (
-	"strings"
-	"errors"
-	"BookCrawl/config"
-	"log"
+    "strings"
+    "errors"
+    "BookCrawl/config"
+    "log"
 )
 
 //数据库操作类型
 type MysqlDb struct {
-	Dbname    string
-	Tblname   string
-	Fields    []string
-	Gfield   string
-	Where     string
-	Limit     string
-	OrderBy   string
-	GroupBy   string
-	Dbcon     *sql.DB
+    Dbname    string
+    Tblname   string
+    Fields    []string
+    Gfield   string
+    Where     string
+    Limit     string
+    OrderBy   string
+    GroupBy   string
+    Dbcon     *sql.DB
 }
 
 func (this *MysqlDb) NewMysqlDb() error {
-	//用户名 密码 IP 端口 在config.go中配置
-	//构建连接："用户名:密码@tcp(IP:端口)/数据库?charset=utf8"
+    //用户名 密码 IP 端口 在config.go中配置
+    //构建连接："用户名:密码@tcp(IP:端口)/数据库?charset=utf8"
     path := strings.Join([]string{config.MQ_USERNAME, ":", config.MQ_PASSWD, "@tcp(", config.MQ_HOST, ":", config.MQ_PORT, ")/", this.Dbname, "?charset=utf8"}, "")
 
     //打开数据库,前者是驱动名，所以要导入： _ "github.com/go-sql-driver/mysql"
@@ -36,15 +36,15 @@ func (this *MysqlDb) NewMysqlDb() error {
 
     //验证连接
     if err := DB.Ping(); err != nil{
-    	return err
+        return err
     }
 
-	this.Dbcon = DB
-	//设置select字段默认值
-	this.Gfield = "*"
-	this.getFields()
+    this.Dbcon = DB
+    //设置select字段默认值
+    this.Gfield = "*"
+    this.getFields()
 
-	return nil
+    return nil
 }
 
 
@@ -59,24 +59,24 @@ func (this *MysqlDb) getFields(){
     result, err := this.Dbcon.Query(sql)
  
     if err != nil{
-    	log.Printf("sql fail ! [%s]",err)
+        log.Printf("sql fail ! [%s]",err)
     }
  
     this.Fields = make([]string,0)
  
-	for result.Next() {
-		var field string
-	  	var Type interface{}
-	  	var Null string
-	  	var Key string
-	  	var Default interface{}
-	  	var Extra string
-		err :=result.Scan(&field,&Type,&Null,&Key,&Default,&Extra)
-     	if err != nil{
-      		log.Printf("scan fail ! [%s]",err)
-     	}
-     	this.Fields = append(this.Fields, field)
-	}
+    for result.Next() {
+        var field string
+        var Type interface{}
+        var Null string
+        var Key string
+        var Default interface{}
+        var Extra string
+        err :=result.Scan(&field,&Type,&Null,&Key,&Default,&Extra)
+        if err != nil{
+            log.Printf("scan fail ! [%s]",err)
+        }
+        this.Fields = append(this.Fields, field)
+    }
  }
 
 /**
@@ -85,23 +85,23 @@ func (this *MysqlDb) getFields(){
  * @return err    错误信息
  */
 func (this *MysqlDb) Find() (res map[string]string, err error) {
-	//log.Printf("SELECT " + this.Gfield + " FROM `" + this.Tblname + "` "+ this.Where + this.OrderBy + this.GroupBy + " limit 1")
-	row, err := this.Dbcon.Query("SELECT " + this.Gfield + " FROM `" + this.Tblname + "` "+ this.Where + this.OrderBy + this.GroupBy + " limit 1")
-	if err != nil {
-		return 
-	}
+    //log.Printf("SELECT " + this.Gfield + " FROM `" + this.Tblname + "` "+ this.Where + this.OrderBy + this.GroupBy + " limit 1")
+    row, err := this.Dbcon.Query("SELECT " + this.Gfield + " FROM `" + this.Tblname + "` "+ this.Where + this.OrderBy + this.GroupBy + " limit 1")
+    if err != nil {
+        return 
+    }
 
-	//获取列名
+    //获取列名
     columns, err := row.Columns()
     if err != nil {
-		return 
-	}
+        return 
+    }
 
-	if !row.Next() {
-		return 
-	}
-	
-	//定义一个切片,长度是字段的个数,切片里面的元素类型是sql.RawBytes
+    if !row.Next() {
+        return 
+    }
+    
+    //定义一个切片,长度是字段的个数,切片里面的元素类型是sql.RawBytes
     values := make([]sql.RawBytes, len(columns))
     //定义一个切片,元素类型是interface{} 接口
     scanArgs := make([]interface{}, len(values))
@@ -127,18 +127,18 @@ func (this *MysqlDb) Find() (res map[string]string, err error) {
  * @return err       错误信息
  */
 func (this *MysqlDb) Select() (result []map[string]string, err error) {
-	
-	rows, err := this.Dbcon.Query("SELECT " + this.Gfield + " FROM `" + this.Tblname + "` "+ this.Where + this.OrderBy + this.GroupBy + this.Limit)
+    
+    rows, err := this.Dbcon.Query("SELECT " + this.Gfield + " FROM `" + this.Tblname + "` "+ this.Where + this.OrderBy + this.GroupBy + this.Limit)
 
-	if err != nil {
-		return 
-	}
+    if err != nil {
+        return 
+    }
 
-	 //获取列名
+     //获取列名
     columns, err := rows.Columns()
     if err != nil {
-		return 
-	}
+        return 
+    }
 
     //定义一个切片,长度是字段的个数,切片里面的元素类型是sql.RawBytes
     values := make([]sql.RawBytes, len(columns))
@@ -178,14 +178,14 @@ func (this *MysqlDb) Insert(data map[string]string) (insert_id int, err error){
     }
 
     if data == nil {
-    	err = errors.New("params data empty")
-    	return
+        err = errors.New("params data empty")
+        return
     }
     keys := " ("
     values := " ("
     for k, v := range data {
-    	keys += "`" + k + "`,"
-    	values += "'" + v + "',"
+        keys += "`" + k + "`,"
+        values += "'" + v + "',"
     }
     new_keys := strings.TrimRight(keys, ",") + ") "
     new_values := strings.TrimRight(values, ",") + ") "
@@ -229,11 +229,11 @@ func (this *MysqlDb) SetField(field string) *MysqlDb{
  */
 func (this *MysqlDb) SetWhere(data map[string]string) *MysqlDb{
     var where_str = " WHERE 1 "
-	if data != nil {
-		for k, v := range data {
-			where_str += " AND `" + k + "` = '" + v +"'"
-		}
-	}
+    if data != nil {
+        for k, v := range data {
+            where_str += " AND `" + k + "` = '" + v +"'"
+        }
+    }
 
    this.Where = where_str
 
@@ -277,7 +277,7 @@ func (this *MysqlDb) SetGroupBy(field string) *MysqlDb{
  * @return bool 修改成功返回true，失败返回false
  */
 func (this *MysqlDb) Update(data map[string]string ) (affect_num int64, err error){
- 	str := ""
+    str := ""
     //过滤非法字段
     for k,v:=range data{
         if res:=in_array(k, this.Fields); res != true {
@@ -289,8 +289,8 @@ func (this *MysqlDb) Update(data map[string]string ) (affect_num int64, err erro
  
     //去掉最右侧的逗号
     str =strings.TrimRight(str, ",")
- 	
- 	//log.Printf(`update ` + this.Tblname + ` set ` + str  +` `+ this.Where)
+    
+    //log.Printf(`update ` + this.Tblname + ` set ` + str  +` `+ this.Where)
     sql := `update ` + this.Tblname + ` set ` + str  +` `+ this.Where
     res, err := this.Dbcon.Exec(sql)
     if err != nil {
