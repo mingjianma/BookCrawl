@@ -30,9 +30,9 @@ func (this *MysqlDb) NewMysqlDb() error {
     //打开数据库,前者是驱动名，所以要导入： _ "github.com/go-sql-driver/mysql"
     DB, _ := sql.Open("mysql", path)
     //设置数据库最大连接数
-    DB.SetConnMaxLifetime(1000)
+    DB.SetConnMaxLifetime(100)
     //设置上数据库最大闲置连接数
-    DB.SetMaxIdleConns(500)
+    DB.SetMaxIdleConns(10)
 
     //验证连接
     if err := DB.Ping(); err != nil{
@@ -47,6 +47,10 @@ func (this *MysqlDb) NewMysqlDb() error {
     return nil
 }
 
+func (this *MysqlDb) Close(){
+    this.Dbcon.Close()
+}
+
 
 /**
  * 获取当前表的所有字段
@@ -57,7 +61,7 @@ func (this *MysqlDb) getFields(){
     sql := "DESC " + this.Tblname
     //执行并发送SQL
     result, err := this.Dbcon.Query(sql)
- 
+    defer result.Close() 
     if err != nil{
         log.Printf("sql fail ! [%s]",err)
     }
@@ -87,6 +91,7 @@ func (this *MysqlDb) getFields(){
 func (this *MysqlDb) Find() (res map[string]string, err error) {
     //log.Printf("SELECT " + this.Gfield + " FROM `" + this.Tblname + "` "+ this.Where + this.OrderBy + this.GroupBy + " limit 1")
     row, err := this.Dbcon.Query("SELECT " + this.Gfield + " FROM `" + this.Tblname + "` "+ this.Where + this.OrderBy + this.GroupBy + " limit 1")
+    defer row.Close()
     if err != nil {
         return 
     }
@@ -129,7 +134,7 @@ func (this *MysqlDb) Find() (res map[string]string, err error) {
 func (this *MysqlDb) Select() (result []map[string]string, err error) {
     
     rows, err := this.Dbcon.Query("SELECT " + this.Gfield + " FROM `" + this.Tblname + "` "+ this.Where + this.OrderBy + this.GroupBy + this.Limit)
-
+    defer rows.Close()
     if err != nil {
         return 
     }

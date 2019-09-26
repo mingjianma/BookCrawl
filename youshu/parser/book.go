@@ -89,7 +89,8 @@ func save(book model.Book){
     if err != nil {
         return 
     }
-    log.Println(book)
+    defer bookTable.Close()
+    //log.Println(book)
     bookWhere := map[string]string{"book_name":book.Book_name, "author":book.Author}
     book_info, _ := bookTable.SetWhere(bookWhere).Find()
 
@@ -124,6 +125,7 @@ func save(book model.Book){
     if err != nil {
         return 
     }
+    defer scoreTable.Close()
     scoreWhere := map[string]string{"book_id":book_id, "date_key":date_key}
     scoreInfo, _ := scoreTable.SetWhere(scoreWhere).Find()
     scorce_data := map[string]string{

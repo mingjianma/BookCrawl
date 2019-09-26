@@ -5,9 +5,16 @@ import (
     "BookCrawl/model"
     "BookCrawl/scheduler"
     "BookCrawl/youshu/parser"
+    "time"
+    "log"
 )
 
 func main() {
+    st := time.Now()
+    defer func() {
+        elapsed := time.Since(st)
+        log.Println("App runtime: ", elapsed)
+    }()
     engine.ConcurrentEngine{
         Scheduler:   &scheduler.SimpleScheduler{},
         WorkerCount: 1000,
