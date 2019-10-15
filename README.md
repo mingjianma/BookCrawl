@@ -19,9 +19,10 @@
 │      fetcher.go	           //分析器
 │
 ├─models	                   //基础数据结构定义目录
-│      book.go                 //小说详情结构
+│      book.go                 //小说详情ORM
 │      types.go                //请求和请求结果结构
-│      mysql.go                //mysql封装类
+│      mysqlorm.go             //mysqlorm封装类
+│      bookscore.go            //每日评分ORM
 │
 ├─scheduler                    //协程调用目录
 │      scheduler.go            //协程调用接口
@@ -41,6 +42,7 @@
 - 修改config/config.go的数据库配置
 - mysql.go封装类是基于go-sql-driver/mysql的mysql的驱动，需要先下载相应的驱动
 >   * 驱动下载命令：go get -u github.com/go-sql-driver/mysql
+>   * orm下载命令：go get -u github.com/astaxie/beego
 
 # 数据处理：
 - 执行main.go即可获取到当天的数据

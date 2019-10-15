@@ -25,6 +25,7 @@ func (e ConcurrentEngine) Run(seeds ...model.Request) {
 
     in := make(chan model.Request)
     out := make(chan model.ParseResult)
+
     // 初始化调度器的 chann
     e.Scheduler.ConfigureMasterWorkerChan(in)
 
@@ -39,6 +40,11 @@ func (e ConcurrentEngine) Run(seeds ...model.Request) {
 
     for {
         result, isClose := <-out // 阻塞获取
+        //等待关闭的渠道数据处理完再退出
+        if !isClose {
+            //log.Printf("out channel closed!")
+            break
+        }
         
         for _, item := range result.Items {
             log.Printf("getItems, items: %v", item)
@@ -49,13 +55,6 @@ func (e ConcurrentEngine) Run(seeds ...model.Request) {
             // 如果 submit 内部直接是 go func() { s.workerChan <- request }()，则为每个Request分配了一个Goroutine，这里不会阻塞在这里
             e.Scheduler.Submit(r)
         }
-
-        //等待关闭的渠道数据处理完再退出
-        if !isClose {
-            //log.Printf("out channel closed!")
-            break
-        }
-
 
     }    
     wg.Wait()
@@ -109,7 +108,6 @@ func createWorker(in chan model.Request, out chan model.ParseResult) {
 }
 
 func worker(r model.Request) (model.ParseResult, error) {
-    log.Printf("fetching url:%s", r.Url)
     body, err := fetcher.Fetch(r.Url)
     if err != nil {
         log.Printf("fetch error, url: %s, err: %v", r.Url, err)

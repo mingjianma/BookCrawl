@@ -30,13 +30,6 @@ func ParseBookList(contents []byte, url string) model.ParseResult {
         result.EndFlag = true
         return result
     }
-    page += 1
-    next_url := PAGELISTURL + strconv.Itoa(page)
-    result.Items = append(result.Items, next_url)
-    result.Requests = append(result.Requests, model.Request{
-       Url:        next_url,
-       ParserFunc: ParseBookList,
-    })
 
     // 通过正则表达式生成正则对象：()用于提取
     rg := regexp.MustCompile(bookListRe)
@@ -53,6 +46,14 @@ func ParseBookList(contents []byte, url string) model.ParseResult {
            ParserFunc: ParseBook,
         })
     }
+
+    page += 1
+    next_url := PAGELISTURL + strconv.Itoa(page)
+    result.Items = append(result.Items, next_url)
+    result.Requests = append(result.Requests, model.Request{
+       Url:        next_url,
+       ParserFunc: ParseBookList,
+    })
 
     // 返回 ParseResult
     return result

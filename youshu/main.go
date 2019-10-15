@@ -17,7 +17,7 @@ func main() {
     }()
     engine.ConcurrentEngine{
         Scheduler:   &scheduler.SimpleScheduler{},
-        WorkerCount: 1000,
+        WorkerCount: 100,
     }.Run(model.Request{
         // 种子 Url
         Url:        parser.SEED_URL,

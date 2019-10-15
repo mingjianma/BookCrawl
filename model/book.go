@@ -1,6 +1,7 @@
 package model
 
 type Book struct {
+    Book_id int `orm:"PK"`
     //书名
     Book_name string
 
@@ -26,8 +27,13 @@ type Book struct {
     Score_detail string
 
     //收录书单次数
-    AddListCount int
+    Add_list_count int
 
     //上次更新时间（粗略）
-    LastUpdate string
+    Last_update string
+}
+
+
+func (b *Book) TableName() string {
+    return "book_info"
 }
